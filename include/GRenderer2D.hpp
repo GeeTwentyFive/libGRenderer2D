@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 class GRenderer2D { public: ~GRenderer2D(); struct SpriteInstance; private: struct _impl; std::unique_ptr<_impl> _; std::unordered_map<uint64_t, std::vector<std::unique_ptr<GRenderer2D::SpriteInstance>>> sprite_instances; public:
-        explicit GRenderer2D(uint32_t window_width, uint32_t window_height);
+        explicit GRenderer2D();
 
         float camera_pos[2] = {0, 0};  // in Normalized Device Coordinates (-1 - 1)
         float camera_zoom = 1.0;

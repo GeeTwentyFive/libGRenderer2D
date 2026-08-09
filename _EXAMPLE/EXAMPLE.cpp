@@ -21,10 +21,11 @@ const double TARGET_FRAMETIME_MS = 1.0;  // Should be a power-of-2 (like 1.0, 2.
 
 
 int main() { try {
-        GWindower gw{0, 0, 4, 6}; if (!gladLoadGL()) ERROR("Failed to load OpenGL");
-        glViewport(0, 0, GWindower::GetScreenWidth(), GWindower::GetScreenHeight()); glClearColor(0.0, 0.0, 0.0, 1.0);
+        GWindower gw{0, 0, 4, 6};
+        
+        if (!gladLoadGL()) ERROR("Failed to load OpenGL");
 
-        GRenderer2D gr2d{(uint32_t)GWindower::GetScreenWidth(), (uint32_t)GWindower::GetScreenHeight()};
+        GRenderer2D gr2d;
 
         int texture_width, texture_height, _texture_comp;
         unsigned char* texture = stbi_load("Square.png", &texture_width, &texture_height, &_texture_comp, 4);
@@ -41,10 +42,12 @@ int main() { try {
         bg->position[0] = (float)GWindower::GetScreenWidth()/2 - sprite_instance->size[0]/2; bg->position[1] = (float)GWindower::GetScreenHeight()/2 - sprite_instance->size[1]/2;
         bg->z_depth = -0.99f;
 
+        glClearColor(0.0, 0.0, 0.0, 1.0);
         GFramePacer gfp; gfp.target_frametime_ms = TARGET_FRAMETIME_MS;
         while (gw.Update()) { if(gw.key_states[GWindower::KEY_ESCAPE]) break;
                 double delta_time = gfp.Wait();
 
+                glViewport(0, 0, gw.window_width, gw.window_height);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 gr2d.camera_pos[0] += ((float)gw.mouse_x)/GWindower::GetScreenWidth();

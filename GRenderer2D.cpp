@@ -60,10 +60,7 @@ const GLchar* FRAGMENT_SHADER = {"#version 460 core\n"
 ""};
 
 struct GRenderer2D::_impl { uint64_t _last_uid = 0; uint64_t NewUID() { return _last_uid++; }
-        uint32_t window_width, window_height;
-
         GLuint shader_id; GLuint sprite_vao;
-        float4x4 ortho_projection;
         GLint shader_viewProjection_location;
         std::unordered_map<uint64_t, GLuint> sprites;
 
@@ -71,9 +68,7 @@ struct GRenderer2D::_impl { uint64_t _last_uid = 0; uint64_t NewUID() { return _
         GLuint ssbo_fragment_instance_input_id; std::vector<float4> instance_colors;
 };
 
-GRenderer2D::GRenderer2D(uint32_t window_width, uint32_t window_height) { this->_ = std::make_unique<GRenderer2D::_impl>(); GLint status;
-        this->_->window_width = window_width; this->_->window_height = window_height;
-
+GRenderer2D::GRenderer2D() { this->_ = std::make_unique<GRenderer2D::_impl>(); GLint status;
         if (!gladLoadGL()) ERROR("Failed to load OpenGL functions");
 
         this->_->shader_id = glCreateProgram(); if (!this->_->shader_id) ERROR("Failed to create shader program");
@@ -91,13 +86,6 @@ GRenderer2D::GRenderer2D(uint32_t window_width, uint32_t window_height) { this->
         glBufferData(GL_ARRAY_BUFFER, sizeof(QUAD_VERTICES), QUAD_VERTICES, GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(float)*4, (void*)0);
-
-        this->_->ortho_projection = {  // (column-major)
-                {(float)(2.0 / this->_->window_width),  0,      0,      0},
-                {0,     (float)(2.0 / this->_->window_height),  0,      0},
-                {0,     0,      -1.0f,  0},
-                {-1.0f, -1.0f,  0,      1.0f}
-        };
 
         this->_->shader_viewProjection_location = glGetUniformLocation(this->_->shader_id, "viewProjection");
 
@@ -126,14 +114,25 @@ uint64_t GRenderer2D::CreateSprite(
 }
 
 int GRenderer2D::DrawFrame() noexcept { GLboolean _prev_depth_enabled = glIsEnabled(GL_DEPTH_TEST); glDisable(GL_DEPTH_TEST);
+        GLint _glviewport[4]; glGetIntegerv(GL_VIEWPORT, _glviewport);
+        const int& viewport_width = _glviewport[2];
+        const int& viewport_height = _glviewport[3];
+
+
         glUseProgram(this->_->shader_id);
 
+        float4x4 ortho_projection = {  // (column-major)
+                {(float)(2.0 / viewport_width),  0,      0,      0},
+                {0,     (float)(2.0 / viewport_height),  0,      0},
+                {0,     0,      -1.0f,  0},
+                {-1.0f, -1.0f,  0,      1.0f}
+        };
         float4x4 viewProjection = linalg::mul(
                 linalg::mul(
                         linalg::translation_matrix(float3{-this->camera_pos[0], -this->camera_pos[1], 0.0}),
                         linalg::scaling_matrix(float3{this->camera_zoom, this->camera_zoom, 1.0})
                 ),
-                this->_->ortho_projection
+                ortho_projection
         );
         glUniformMatrix4fv(
                 this->_->shader_viewProjection_location, 1, GL_FALSE,
