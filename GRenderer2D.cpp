@@ -113,7 +113,7 @@ uint64_t GRenderer2D::CreateSprite(
         return sprite_id;
 }
 
-int GRenderer2D::DrawFrame(int framebuffer_width, int framebuffer_height) noexcept { GLboolean _prev_depth_enabled = glIsEnabled(GL_DEPTH_TEST); glDisable(GL_DEPTH_TEST);
+int GRenderer2D::DrawFrame(int framebuffer_width, int framebuffer_height) noexcept { glDisable(GL_DEPTH_TEST);
         glUseProgram(this->_->shader_id);
 
         float4x4 ortho_projection = {  // (column-major)
@@ -168,8 +168,6 @@ int GRenderer2D::DrawFrame(int framebuffer_width, int framebuffer_height) noexce
                 glDrawArraysInstanced(GL_TRIANGLES, 0, 6, _sprite_instances.size());
         }
 
-
-        if (_prev_depth_enabled) glEnable(GL_DEPTH_TEST);
 
         return 0;
 }
