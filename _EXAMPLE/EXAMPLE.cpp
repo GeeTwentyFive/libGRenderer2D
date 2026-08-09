@@ -60,7 +60,7 @@ int main() { try {
                 if (gw.key_states[GWindower::KEY_W]) sprite_instance->position[1] += delta_time * GWindower::GetScreenHeight();
                 if (gw.key_states[GWindower::KEY_S]) sprite_instance->position[1] -= delta_time * GWindower::GetScreenHeight();
 
-                gr2d.DrawFrame();
+                gr2d.DrawFrame(gw.window_width, gw.window_height);
         }
 
         return 0;

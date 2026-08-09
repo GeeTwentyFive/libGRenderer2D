@@ -24,5 +24,5 @@ class GRenderer2D { public: ~GRenderer2D(); struct SpriteInstance; private: stru
         };
         SpriteInstance* AddSprite(const uint64_t sprite_id) noexcept { auto sprite_instance = std::make_unique<SpriteInstance>(); sprite_instance->_renderer_instance = this; sprite_instance->sprite_id = sprite_id; SpriteInstance* ptr = sprite_instance.get(); sprite_instances[sprite_id].push_back(std::move(sprite_instance)); return ptr; }
 
-        int DrawFrame() noexcept;  // returns non-0 on error
+        int DrawFrame(int framebuffer_width, int framebuffer_height) noexcept;  // returns non-0 on error
 };
