@@ -113,7 +113,7 @@ uint64_t GRenderer2D::CreateSprite(
         return sprite_id;
 }
 
-int GRenderer2D::DrawFrame(int framebuffer_width, int framebuffer_height) noexcept { glDisable(GL_DEPTH_TEST);
+int GRenderer2D::DrawFrame(int framebuffer_width, int framebuffer_height) noexcept { glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); glEnable(GL_DEPTH_TEST);
         glUseProgram(this->_->shader_id);
 
         float4x4 ortho_projection = {  // (column-major)
