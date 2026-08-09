@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.30...4.4)
 project(GRenderer2D)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# option(GRENDERER2D_BUILD_EXAMPLE "Build example program" ON)
+option(GRENDERER2D_BUILD_EXAMPLE "Build example program" ON)
 
 add_library(${PROJECT_NAME}
 	"GRenderer2D.cpp"
@@ -16,6 +16,6 @@ add_library(GRENDERER2D_glad
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE GRENDERER2D_glad)
 
-# if (GRENDERER2D_BUILD_EXAMPLE)
-#         add_subdirectory(_EXAMPLE)
-# endif()
+if (GRENDERER2D_BUILD_EXAMPLE)
+        add_subdirectory(_EXAMPLE)
+endif()
