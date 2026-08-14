@@ -11,13 +11,16 @@ using namespace linalg::aliases;
 #include <string.h>
 
 
+namespace {
 static const size_t SSBO_VERTEX_INSTANCE_INPUT_CAPACITY = 256 * 1024 * 1024;
 static const size_t SSBO_FRAGMENT_INSTANCE_INPUT_CAPACITY = 64 * 1024 * 1024;
+}
 
 
 #define ERROR(msg) throw std::runtime_error(std::string("[ERROR] ") + __FILE__ + "@" + std::to_string(__LINE__) + " (" + __func__ + "): " + (msg))
 
 
+namespace {
 const static float QUAD_VERTICES[] = {
         // pos          // uv
         0.0f, 1.0f,     0.0f, 1.0f,
@@ -58,6 +61,7 @@ const GLchar* FRAGMENT_SHADER = {"#version 460 core\n"
                 "FragColor = color;"
         "}"
 ""};
+}
 
 struct GRenderer2D::_impl { uint64_t _last_uid = 0; uint64_t NewUID() { return _last_uid++; }
         GLuint shader_id; GLuint sprite_vao;
