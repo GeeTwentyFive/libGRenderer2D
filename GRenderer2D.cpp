@@ -118,7 +118,7 @@ uint64_t GRenderer2D::CreateSprite(
 }
 
 int GRenderer2D::DrawFrame(int framebuffer_width, int framebuffer_height) noexcept { glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); glEnable(GL_DEPTH_TEST);
-        glUseProgram(this->_->shader_id);
+        glUseProgram(this->_->shader_id); glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, this->_->ssbo_vertex_instance_input_id); glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, this->_->ssbo_fragment_instance_input_id);
 
         float4x4 ortho_projection = {  // (column-major)
                 {(float)(2.0 / framebuffer_width),  0,      0,      0},
