@@ -1,14 +1,16 @@
 #include <GRenderer2D.hpp>
 
-#include <glad/glad.h>
-#include <linalg/linalg.h>
-using namespace linalg::aliases;
-
+#include <memory>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 #include <unordered_map>
 #include <string.h>
+
+#include <glad/glad.h>
+#include <linalg/linalg.h>
+using namespace linalg::aliases;
 
 
 namespace {
@@ -66,8 +68,10 @@ const GLchar* FRAGMENT_SHADER = {"#version 460 core\n"
 struct GRenderer2D::_impl { uint64_t _last_uid = 0; uint64_t NewUID() { return _last_uid++; }
         GLuint shader_id; GLuint sprite_vao;
         GLint shader_viewProjection_location;
+
         std::unordered_map<uint64_t, GLuint> sprites;
 
+        std::unordered_map<uint64_t, std::vector<std::unique_ptr<GRenderer2D::SpriteInstance>>> sprite_instances;
         GLuint ssbo_vertex_instance_input_id; std::vector<float4x4> instance_model_matrices;
         GLuint ssbo_fragment_instance_input_id; std::vector<float4> instance_colors;
 };
@@ -117,6 +121,24 @@ uint64_t GRenderer2D::CreateSprite(
         return sprite_id;
 }
 
+GRenderer2D::SpriteInstance* GRenderer2D::AddSprite(const uint64_t sprite_id) noexcept {
+        std::unique_ptr<GRenderer2D::SpriteInstance>& sprite_instance = this->_->sprite_instances[sprite_id].emplace_back(std::make_unique<GRenderer2D::SpriteInstance>());
+        sprite_instance->_renderer_instance = this;
+        sprite_instance->sprite_id = sprite_id;
+        return sprite_instance.get();
+}
+
+void GRenderer2D::SpriteInstance::Remove() noexcept {
+        std::vector<std::unique_ptr<GRenderer2D::SpriteInstance>>& sprite_instances = this->_renderer_instance->_->sprite_instances[this->sprite_id];
+        for (size_t i = 0; i < sprite_instances.size(); i++) {
+                if (sprite_instances[i].get() == this) {
+                        sprite_instances[i] = std::move(sprite_instances.back());
+                        break;
+                }
+        }
+        sprite_instances.pop_back();
+}
+
 int GRenderer2D::DrawFrame(int framebuffer_width, int framebuffer_height) noexcept { glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); glEnable(GL_DEPTH_TEST);
         glUseProgram(this->_->shader_id); glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, this->_->ssbo_vertex_instance_input_id); glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, this->_->ssbo_fragment_instance_input_id);
 
@@ -140,7 +162,7 @@ int GRenderer2D::DrawFrame(int framebuffer_width, int framebuffer_height) noexce
 
         // Draw sprites
         glBindVertexArray(this->_->sprite_vao);
-        for (const auto& [sprite_id, _sprite_instances] : sprite_instances) {
+        for (const auto& [sprite_id, _sprite_instances] : this->_->sprite_instances) {
                 glBindTextureUnit(0, this->_->sprites[sprite_id]);
 
                 this->_->instance_model_matrices.clear(); this->_->instance_model_matrices.reserve(_sprite_instances.size()); if (this->_->instance_model_matrices.capacity() > SSBO_VERTEX_INSTANCE_INPUT_CAPACITY) return __LINE__;
